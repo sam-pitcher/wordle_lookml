@@ -1,10 +1,20 @@
 view: letters_5 {
+  # row_number: You can use row_number to index your rows. This is useful here as I only want
+  #             to receive one row every query; the row number that matches the day of the year
+  #             this is defined in the sql_always_where in the model file.
+  #             This is also useful if you need a primary key in your view file, but don't have
+  #             one, I would however suggest using generate_uuid() as pk instead of a window
+  #             function as it is more performannt!
+
   sql_table_name: (select *, row_number() over() as rn from `lookerplus.wordle.letters_5`) ;;
+
   dimension: words {
     primary_key: yes
     sql: ${TABLE}.string_field_0 ;;
   }
+
   dimension: rn {
+    hidden: yes
     type: number
     sql: ${TABLE}.rn ;;
   }
@@ -37,14 +47,13 @@ view: letters_5 {
     sql: ${words} ;;
     html:
     {% assign n=0 %}
-    {% assign letters = "" %}
     {% assign guess = selection_1._parameter_value | split: "" %}
     {% assign answer = value | split: "" %}
 
     {% for i in answer %}
       {% if i == guess[n] %}
         <font color="green">{{guess[n]}}<font>
-        {% assign letters = letters | append: guess[n] %}
+
       {% elsif answer contains guess[n] %}
         <font color="orange">{{guess[n]}}<font>
 
